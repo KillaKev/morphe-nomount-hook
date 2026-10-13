@@ -21,10 +21,12 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - uses: android-actions/setup-android@v3
-
+      # ubuntu-latest ships with the Android SDK and sdkmanager (ANDROID_HOME)
       - name: Install SDK packages
-        run: sdkmanager "platforms;android-34" "build-tools;34.0.0"
+        run: |
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMANAGER" --licenses > /dev/null || true
+          "$SDKMANAGER" "platforms;android-34" "build-tools;34.0.0"
 
       # Add your keystore as a base64 secret named KEYSTORE_BASE64 (and KS_PASS if its password
       # is not "android"). Builds signed with your key install as an update over your current one.
