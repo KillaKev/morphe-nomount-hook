@@ -1,0 +1,7 @@
+out/
+dist/
+*.apk
+*.idsig
+# signing keys: never commit these
+*.keystore
+*.jks
