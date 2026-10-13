@@ -47,25 +47,28 @@ ANDROID_SDK=/path/to/sdk bash build.sh      # writes dist/morphe-nomount-hook.ap
 No Gradle and no Xposed API download: `stubs/` holds the few Xposed API signatures needed to
 compile, and they are not packaged. On Windows run it from Git Bash.
 
-### Signing key
-
-`build.sh` signs with `debug.keystore` (generated on first run, gitignored). An update only
-installs over an existing install if it is signed with the same key, so keep that file.
-
-For the GitHub Action, add the key as a repository secret:
-
-```bash
-base64 -w0 debug.keystore     # copy the output into a secret named KEYSTORE_BASE64
-```
-
-(and `KS_PASS` if the password is not `android`). Without the secret the Action still builds,
-using a throwaway key, so uninstall the old module before installing that APK.
-
 ### GitHub Action
 
 `.github/workflows/build.yml` builds on every push to `main`, on pull requests and on manual
-runs, and uploads the APK as an artifact. Pushing a tag like `v2.3` also attaches it to a
-release.
+runs, and uploads the APK as the `morphe-nomount-hook` artifact. Pushing a tag like `v2.3` also
+attaches it to a release. It builds on `ubuntu-latest` with the runner's preinstalled Android
+SDK, so there is nothing to set up.
+
+CI builds are signed with the repository secret `KEYSTORE_BASE64`, which is already configured
+here, so they install as an in-place update over an existing install. There is no signing step
+to do by hand.
+
+### Signing key
+
+An update only installs over an existing install if it is signed with the same key. The key
+exists in two places: `debug.keystore` locally (gitignored, generated on the first local build)
+and the `KEYSTORE_BASE64` secret. Both are the same key. GitHub secrets can't be read back, so
+keep a backup of `debug.keystore`; if both copies are lost, the next build can't update an
+installed copy and the old module has to be uninstalled first.
+
+If you fork this, the Action still builds without the secret but signs with a throwaway key.
+To sign with your own, add the key as a secret named `KEYSTORE_BASE64`
+(`base64 -w0 debug.keystore`), plus `KS_PASS` if its password is not `android`.
 
 ## Debugging
 
